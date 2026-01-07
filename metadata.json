@@ -1,0 +1,5 @@
+{
+  "name": "DuoMind AI Chat",
+  "description": "A dark-themed chat interface where two AIs (Gemini & Puter/GPT) converse autonomously with user intervention capabilities.",
+  "requestFramePermissions": []
+}
