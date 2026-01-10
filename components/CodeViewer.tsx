@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { FileCode, FileText, FileJson, Globe, Save, ExternalLink, Download, Menu, ChevronLeft, Archive, Play, Eye } from 'lucide-react';
 import { ProjectFiles } from '../types';
 
@@ -22,15 +22,21 @@ export const CodeViewer: React.FC<CodeViewerProps> = ({ files, activeFile, onFil
     return <FileJson size={16} className="text-zinc-400" />;
   };
 
-  // Generate a blob URL for the HTML preview including CSS/JS if linked locally
+  const downloadFile = (name: string, content: string) => {
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = name;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const generatePreview = () => {
     const html = files['index.html'] || files[Object.keys(files).find(f => f.endsWith('.html')) || ''] || "";
-    if (!html) return "data:text/html,<html><body>Aucun fichier HTML trouvé pour la prévisualisation.</body></html>";
+    if (!html) return "data:text/html,<html><body style='background:#000;color:#fff;display:flex;justify-content:center;align-items:center;height:100vh;font-family:sans-serif;'>Aucun fichier HTML trouvé.</body></html>";
     
-    // Simple bundling: replace local references with blobs or actual content
     let bundledHtml = html;
-    
-    // Injects CSS
     Object.keys(files).forEach(name => {
       if (name.endsWith('.css')) {
         bundledHtml = bundledHtml.replace(
@@ -55,7 +61,7 @@ export const CodeViewer: React.FC<CodeViewerProps> = ({ files, activeFile, onFil
       <div className="flex-1 flex flex-col items-center justify-center text-zinc-600 bg-zinc-950 p-6 text-center">
         <FileCode size={48} className="mb-4 opacity-20" />
         <p className="font-medium text-zinc-400">Aucun fichier généré.</p>
-        <p className="text-xs mt-2 text-zinc-500">Demandez à l'IA d'utiliser des images d'Internet pour son jeu.</p>
+        <p className="text-xs mt-2 text-zinc-500">L'essaim doit produire du code pour que vous puissiez l'installer.</p>
       </div>
     );
   }
@@ -77,14 +83,14 @@ export const CodeViewer: React.FC<CodeViewerProps> = ({ files, activeFile, onFil
               }`}
             >
               {getFileIcon(name)}
-              <span className="truncate">{name}</span>
+              <span className="truncate flex-1 text-left">{name}</span>
             </button>
           ))}
         </div>
-        <div className="p-3 border-t border-zinc-800">
+        <div className="p-3 border-t border-zinc-800 space-y-2">
            <button 
              onClick={() => setIsPreviewMode(!isPreviewMode)}
-             className={`w-full flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-bold transition-all ${isPreviewMode ? 'bg-green-600 text-white' : 'bg-zinc-800 text-zinc-300'}`}
+             className={`w-full flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-bold transition-all ${isPreviewMode ? 'bg-green-600 text-white shadow-[0_0_10px_rgba(22,163,74,0.3)]' : 'bg-zinc-800 text-zinc-300'}`}
            >
              <Play size={14} /> {isPreviewMode ? "RETOUR AU CODE" : "VOIR LE RÉSULTAT"}
            </button>
@@ -95,12 +101,21 @@ export const CodeViewer: React.FC<CodeViewerProps> = ({ files, activeFile, onFil
         <div className="h-12 border-b border-zinc-800 bg-zinc-900 flex items-center justify-between px-4">
           <div className="flex items-center gap-2">
             {!showFileSidebar && (
-              <button onClick={() => setShowFileSidebar(true)} className="p-1.5 text-zinc-400 bg-zinc-800 rounded-md"><Menu size={16} /></button>
+              <button onClick={() => setShowFileSidebar(true)} className="p-1.5 text-zinc-400 bg-zinc-800 rounded-md mr-2"><Menu size={16} /></button>
             )}
-            <span className="text-xs font-mono text-zinc-400 uppercase tracking-tighter">
-              {isPreviewMode ? "🚀 Live Preview (Web Assets)" : `📄 ${activeFile}`}
+            <span className="text-xs font-mono text-zinc-400 uppercase">
+              {isPreviewMode ? "🚀 Preview" : `📄 ${activeFile}`}
             </span>
           </div>
+          {!isPreviewMode && activeFile && (
+            <button 
+              onClick={() => downloadFile(activeFile, currentContent)}
+              className="text-zinc-500 hover:text-white transition-colors p-1.5"
+              title="Télécharger ce fichier"
+            >
+              <Download size={16} />
+            </button>
+          )}
         </div>
         
         <div className="flex-1 overflow-hidden">

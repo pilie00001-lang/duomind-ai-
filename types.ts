@@ -1,8 +1,10 @@
+
 export enum Sender {
   User = 'USER',
   Gemini = 'GEMINI',
   Puter = 'PUTER',
-  Claude = 'CLAUDE'
+  Claude = 'CLAUDE',
+  GeminiNative = 'GEMINI_NATIVE'
 }
 
 export interface Message {

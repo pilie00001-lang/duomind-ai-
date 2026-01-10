@@ -1,6 +1,7 @@
+
 import React from 'react';
 import { Message, Sender } from '../types';
-import { Bot, User, Cpu, Sparkles } from 'lucide-react';
+import { Bot, User, Cpu, Sparkles, Zap } from 'lucide-react';
 
 interface ChatBubbleProps {
   message: Message;
@@ -9,11 +10,11 @@ interface ChatBubbleProps {
 export const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
   const isUser = message.sender === Sender.User;
   
-  // Default (Gemini)
+  // Configuration par défaut
   let alignClass = "justify-start";
   let bgClass = "bg-blue-900/30 border border-blue-800 text-blue-100";
   let Icon = Bot;
-  let name = "Gemini 2.5";
+  let name = "Gemini (Puter)";
   let iconColor = "text-blue-400";
 
   if (isUser) {
@@ -25,13 +26,19 @@ export const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
   } else if (message.sender === Sender.Puter) {
     bgClass = "bg-gray-800 border border-gray-700 text-gray-100";
     Icon = Cpu;
-    name = "GPT-5.2";
+    name = "GPT-4o (Puter)";
     iconColor = "text-purple-400";
   } else if (message.sender === Sender.Claude) {
     bgClass = "bg-amber-900/20 border border-amber-800/50 text-amber-100";
     Icon = Sparkles;
     name = "Claude 3";
     iconColor = "text-amber-400";
+  } else if (message.sender === Sender.GeminiNative) {
+    // Nouveau style pour Gemini Native
+    bgClass = "bg-teal-900/30 border border-teal-700/50 text-teal-100 shadow-[0_0_15px_rgba(20,184,166,0.1)]";
+    Icon = Zap;
+    name = "Gemini Flash Lite";
+    iconColor = "text-teal-400";
   }
 
   return (

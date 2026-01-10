@@ -1,39 +1,30 @@
 
 import { Message, Sender } from "../types";
 
-const getSenderName = (sender: Sender): string => {
-  switch (sender) {
-    case Sender.User: return 'Humain';
-    case Sender.Gemini: return 'Gemini';
-    case Sender.Puter: return 'GPT-5.2';
-    case Sender.Claude: return 'Toi (Claude)';
-    default: return 'Inconnu';
-  }
-};
-
 export const generateClaudeResponse = async (history: Message[], participants: Sender[]): Promise<string> => {
-  const participantNames = participants.map(p => p === Sender.Claude ? "Toi" : p).join(', ');
-  const recentHistory = history.slice(-10).map(msg => 
-    `${getSenderName(msg.sender)}: ${msg.text}`
+  // Fenêtrage strict pour économiser le quota Puter (Claude coûte cher en tokens)
+  const recentHistory = history.slice(-5).map(msg => 
+    `[${msg.sender}]: ${msg.text}`
   ).join('\n');
 
   const fullPrompt = `
-    Tu es Claude. Tu collabores avec : [${participantNames}].
-    Analyse les arguments ou le code précédent et apporte ta pierre à l'édifice.
+    Rôle: Claude (Expert Code & Architecture).
+    Team: [${participants.join(',')}].
+    WEB: ON. Si tu as besoin d'assets visuels, suggère des URLs Unsplash précises.
+    MISSION: Analyse, améliore le code et poursuis la collaboration.
+    FORMAT: Court, max 100 mots. Code en [FILE:nom]...[END_FILE].
     
-    HISTORIQUE :
+    HISTO :
     ${recentHistory}
-    
-    Réponds en FRANÇAIS (max 100 mots).
   `;
 
   if (window.puter && window.puter.ai) {
     try {
       const result = await window.puter.ai.chat(fullPrompt, { model: 'anthropic/claude-3.5-haiku' });
-      return typeof result === 'string' ? result : result?.message?.content || result?.content || JSON.stringify(result);
+      return typeof result === 'string' ? result : result?.message?.content || result?.content || "";
     } catch (err) {
-      return JSON.stringify(err);
+      return "Quota Claude atteint ou erreur.";
     }
   }
-  return "Puter not loaded";
+  return "Puter non chargé.";
 };
