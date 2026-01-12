@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Message, Sender } from '../types';
-import { Bot, User, Cpu, Sparkles, Zap } from 'lucide-react';
+import { Bot, User, Zap, Monitor } from 'lucide-react';
 
 interface ChatBubbleProps {
   message: Message;
@@ -10,47 +10,38 @@ interface ChatBubbleProps {
 export const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
   const isUser = message.sender === Sender.User;
   
-  // Configuration par défaut
   let alignClass = "justify-start";
-  let bgClass = "bg-blue-900/30 border border-blue-800 text-blue-100";
+  let bgClass = "bg-white/5 backdrop-blur-xl border border-white/10 text-zinc-100 shadow-xl";
   let Icon = Bot;
-  let name = "Gemini (Puter)";
-  let iconColor = "text-blue-400";
+  let iconColor = "text-zinc-400";
 
   if (isUser) {
     alignClass = "justify-end";
-    bgClass = "bg-white text-black";
+    bgClass = "bg-orange-600/20 backdrop-blur-xl border border-orange-500/30 text-white shadow-lg shadow-orange-900/10";
     Icon = User;
-    name = "Vous";
-    iconColor = "text-gray-400";
-  } else if (message.sender === Sender.Puter) {
-    bgClass = "bg-gray-800 border border-gray-700 text-gray-100";
-    Icon = Cpu;
-    name = "GPT-4o (Puter)";
-    iconColor = "text-purple-400";
-  } else if (message.sender === Sender.Claude) {
-    bgClass = "bg-amber-900/20 border border-amber-800/50 text-amber-100";
-    Icon = Sparkles;
-    name = "Claude 3";
-    iconColor = "text-amber-400";
+    iconColor = "text-orange-400";
+  } else if (message.sender === Sender.Local) {
+    bgClass = "bg-zinc-900/40 backdrop-blur-2xl border border-white/5 text-orange-200";
+    Icon = Monitor;
+    iconColor = "text-orange-500";
   } else if (message.sender === Sender.GeminiNative) {
-    // Nouveau style pour Gemini Native
-    bgClass = "bg-teal-900/30 border border-teal-700/50 text-teal-100 shadow-[0_0_15px_rgba(20,184,166,0.1)]";
+    bgClass = "bg-teal-950/20 backdrop-blur-2xl border border-teal-500/20 text-teal-100";
     Icon = Zap;
-    name = "Gemini Flash Lite";
     iconColor = "text-teal-400";
   }
 
+  const displayName = message.authorName || (isUser ? "Vous" : "Assistant");
+
   return (
-    <div className={`flex w-full mb-4 ${alignClass}`}>
-      <div className={`flex max-w-[80%] md:max-w-[70%] flex-col ${isUser ? 'items-end' : 'items-start'}`}>
-        <div className="flex items-center gap-2 mb-1 px-1">
-          {!isUser && <Icon size={14} className={iconColor} />}
-          <span className="text-xs font-mono text-gray-500 uppercase tracking-wider">{name}</span>
+    <div className={`flex w-full mb-8 ${alignClass} animate-in fade-in slide-in-from-bottom-4 duration-500`}>
+      <div className={`flex max-w-[85%] md:max-w-[70%] flex-col ${isUser ? 'items-end' : 'items-start'}`}>
+        <div className="flex items-center gap-2 mb-2 px-2">
+          {!isUser && <Icon size={14} className={`${iconColor} animate-pulse`} />}
+          <span className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em]">{displayName}</span>
           {isUser && <Icon size={14} className={iconColor} />}
         </div>
         
-        <div className={`px-4 py-3 rounded-2xl text-sm md:text-base shadow-sm leading-relaxed whitespace-pre-wrap ${bgClass} ${isUser ? 'rounded-tr-sm' : 'rounded-tl-sm'}`}>
+        <div className={`px-6 py-5 rounded-[2rem] text-[15px] leading-relaxed whitespace-pre-wrap ${bgClass} ${isUser ? 'rounded-tr-none' : 'rounded-tl-none'}`}>
           {message.text}
         </div>
       </div>

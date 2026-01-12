@@ -4,12 +4,24 @@ export enum Sender {
   Gemini = 'GEMINI',
   Puter = 'PUTER',
   Claude = 'CLAUDE',
-  GeminiNative = 'GEMINI_NATIVE'
+  GeminiNative = 'GEMINI_NATIVE',
+  Local = 'LOCAL'
+}
+
+export interface Agent {
+  id: string;
+  type: Sender;
+  name: string;
+  color: string;
+  isActive: boolean;
+  localEndpoint?: string; // ex: http://localhost:11434/api/generate
+  modelName?: string;    // ex: llama3
 }
 
 export interface Message {
   id: string;
   sender: Sender;
+  authorName?: string;
   text: string;
   timestamp: number;
 }
@@ -28,7 +40,6 @@ export interface Conversation {
   files: ProjectFiles;
 }
 
-// Global declaration for the Puter.com AI interface
 declare global {
   interface Window {
     puter?: {

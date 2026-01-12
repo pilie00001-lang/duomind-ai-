@@ -1,18 +1,23 @@
 
 import { Message, Sender } from "../types";
 
-export const generateClaudeResponse = async (history: Message[], participants: Sender[]): Promise<string> => {
-  // Fenêtrage strict pour économiser le quota Puter (Claude coûte cher en tokens)
+export const generateClaudeResponse = async (
+  history: Message[], 
+  participantsNames: string[],
+  agentName?: string
+): Promise<string> => {
   const recentHistory = history.slice(-5).map(msg => 
-    `[${msg.sender}]: ${msg.text}`
+    `[${msg.authorName || msg.sender}]: ${msg.text}`
   ).join('\n');
 
   const fullPrompt = `
-    Rôle: Claude (Expert Code & Architecture).
-    Team: [${participants.join(',')}].
-    WEB: ON. Si tu as besoin d'assets visuels, suggère des URLs Unsplash précises.
-    MISSION: Analyse, améliore le code et poursuis la collaboration.
-    FORMAT: Court, max 100 mots. Code en [FILE:nom]...[END_FILE].
+    Rôle: Claude. NOM : "${agentName || 'Claude 3'}".
+    Team: [${participantsNames.join(',')}].
+    
+    CRITIQUE :
+    Quand tu utilises [FILE:name], tu DOIS écrire TOUT le code du fichier.
+    Ne mets JAMAIS de "..." pour dire "le reste ne change pas".
+    Réécris TOUT.
     
     HISTO :
     ${recentHistory}

@@ -1,5 +1,5 @@
 {
-  "name": "DuoMind AI Chat",
-  "description": "A dark-themed chat interface where two AIs (Gemini & Puter/GPT) converse autonomously with user intervention capabilities.",
+  "name": "DuoMind AI IDE",
+  "description": "IDE colaboratif multi-IA avec support de dossiers et drag-and-drop massif.",
   "requestFramePermissions": []
 }

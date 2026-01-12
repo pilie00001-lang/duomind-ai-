@@ -1,36 +1,38 @@
 
 import { GoogleGenAI } from "@google/genai";
-import { Message, Sender, ProjectFiles } from "../types";
+import { Message, Sender } from "../types";
 
-// Initialisation du client avec la clé API de l'environnement
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 export const generateNativeGeminiResponse = async (
   history: Message[], 
-  participants: Sender[], 
-  systemPrompt?: string
+  participantsNames: string[], 
+  systemPrompt?: string,
+  agentName?: string
 ): Promise<string> => {
   
-  // Construction de l'historique pour le contexte
-  const recentHistory = history.slice(-8).map(msg => 
-    `[${msg.sender}]: ${msg.text}`
+  const recentHistory = history.slice(-12).map(msg => 
+    `[${msg.authorName || msg.sender}]: ${msg.text}`
   ).join('\n');
 
   const fullPrompt = `
     ${systemPrompt || 'Tu es une IA de développement technique experte.'}
     
-    RÈGLES STRICTES :
-    1. Tu es l'unité "GEMINI PRO FLASH" (Native API).
-    2. Tu collabores avec : ${participants.join(', ')}.
-    3. Si tu es le seul participant, continue ta propre réflexion.
-    4. Pour coder, utilise le format : [FILE:nom]...[END_FILE].
+    TON IDENTITÉ :
+    - Nom : "${agentName || 'GEMINI PRO FLASH'}".
+    - Rôle : Développeur Senior.
+    - Équipe : ${participantsNames.join(', ')}.
+
+    DIRECTIVES ABSOLUES :
+    1. NE JAMAIS utiliser de "..." ou "// code existant". Tout fichier envoyé via [FILE:...] écrase le précédent. Tu dois envoyer le code COMPLET.
+    2. Si tu réponds à une erreur de syntaxe, corrige le code et renvoie tout le fichier.
+    3. Si on te demande un jeu ou une interface, utilise HTML/JS (index.html, style.css, script.js) pour que l'utilisateur puisse voir le résultat (Aperçu Web).
     
-    HISTORIQUE DE LA CONVERSATION :
+    DERNIERS ÉCHANGES :
     ${recentHistory}
   `;
 
   try {
-    // Utilisation du modèle Flash Lite pour une latence ultra-faible comme demandé
     const response = await ai.models.generateContent({
       model: 'gemini-flash-lite-latest', 
       contents: fullPrompt,

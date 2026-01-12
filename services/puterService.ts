@@ -1,9 +1,14 @@
 
 import { Message, Sender } from "../types";
 
-export const generatePuterResponse = async (history: Message[], participants: Sender[], systemPrompt?: string): Promise<string> => {
+export const generatePuterResponse = async (
+  history: Message[], 
+  participantsNames: string[], 
+  systemPrompt?: string,
+  agentName?: string
+): Promise<string> => {
   const historyText = history.slice(-6).map(msg => 
-    `[${msg.sender}]: ${msg.text}`
+    `[${msg.authorName || msg.sender}]: ${msg.text}`
   ).join('\n');
 
   if (window.puter && window.puter.ai) {
@@ -11,10 +16,11 @@ export const generatePuterResponse = async (history: Message[], participants: Se
       const contextPrompt = `
         ${systemPrompt}
         
-        INSTRUCTIONS :
-        - Analyse le travail des autres unités.
-        - Produis du code utile et fonctionnel.
-        - Langue : Français.
+        TON NOM : "${agentName || 'GPT-4o'}".
+        
+        ATTENTION : Les fichiers sont écrasés à chaque modification.
+        TU DOIS FOURNIR LE CODE COMPLET DANS [FILE:...].
+        INTERDIT : "..." ou "// existing code".
         
         HISTO :
         ${historyText}
