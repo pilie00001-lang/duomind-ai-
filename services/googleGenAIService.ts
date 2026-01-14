@@ -2,7 +2,6 @@
 import { GoogleGenAI } from "@google/genai";
 import { Message } from "../types";
 
-// Initialisation avec la clé d'environnement (automatiquement injectée)
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
 
 export const generateNativeGeminiResponse = async (
@@ -12,32 +11,29 @@ export const generateNativeGeminiResponse = async (
   agentName: string
 ): Promise<string> => {
   try {
-    // Construction de l'historique pour le modèle
-    // On convertit les messages en format compatible Gemini
-    const contents = history.slice(-10).map(m => ({
+    // On ne garde que les 6 derniers messages pour réduire la charge mémoire de l'IA
+    const contents = history.slice(-6).map(m => ({
       role: m.authorName === agentName ? 'model' : 'user',
-      parts: [{ text: `[${m.authorName || 'Interlocuteur'}]: ${m.text}` }]
+      parts: [{ text: `[${m.authorName}]: ${m.text}` }]
     }));
 
-    // On ajoute le prompt système et la demande actuelle
-    const finalPrompt = `${systemPrompt}\n\nTu es ${agentName}. Analyse les fichiers et la discussion précédente pour répondre de manière pertinente.`;
-
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-3-flash-preview', // Passage sur Flash par défaut pour la rapidité
       contents: [
         ...contents,
-        { role: 'user', parts: [{ text: finalPrompt }] }
+        { role: 'user', parts: [{ text: systemPrompt + `\n\nTu es ${agentName}.` }] }
       ],
       config: {
-        temperature: 0.8,
-        topP: 0.95,
-        topK: 40,
+        temperature: 0.7,
+        topP: 0.8,
+        // On réduit le budget de pensée pour accélérer la réponse
+        thinkingConfig: { thinkingBudget: 2000 }
       }
     });
 
-    return response.text || "L'IA n'a pas pu générer de réponse.";
+    return response.text || "Erreur.";
   } catch (e) {
-    console.error("Gemini API Error:", e);
-    return "⚠️ Erreur de connexion avec l'API Gemini. Vérifiez votre clé ou le quota.";
+    console.error("Gemini Error:", e);
+    return "Service temporairement lent, réessayez.";
   }
 };
