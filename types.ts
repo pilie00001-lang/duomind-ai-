@@ -5,7 +5,8 @@ export enum Sender {
   Puter = 'PUTER',
   Claude = 'CLAUDE',
   GeminiNative = 'GEMINI_NATIVE',
-  Local = 'LOCAL'
+  Local = 'LOCAL',
+  Custom = 'CUSTOM'
 }
 
 export interface Agent {
@@ -14,8 +15,8 @@ export interface Agent {
   name: string;
   color: string;
   isActive: boolean;
-  localEndpoint?: string; // ex: http://localhost:11434/api/generate
-  modelName?: string;    // ex: llama3
+  systemPrompt?: string;
+  modelName?: string;
 }
 
 export interface Message {
@@ -35,9 +36,9 @@ export interface Conversation {
   title: string;
   messages: Message[];
   lastUpdated: number;
-  participants: Sender[];
-  isCodeMode?: boolean;
+  participants: string[]; // Liste des IDs d'agents participants
   files: ProjectFiles;
+  isCodeMode?: boolean;
 }
 
 declare global {

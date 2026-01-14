@@ -1,38 +1,37 @@
+
+import { GoogleGenAI } from "@google/genai";
 import { Message, Sender } from "../types";
+
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
 
 export const generateAnalysis = async (history: Message[]): Promise<string> => {
   if (history.length === 0) return "";
 
-  // On prend juste les derniers messages pour le contexte immédiat
-  const recentExchanges = history.slice(-4).map(msg => {
-    const name = msg.sender === Sender.User ? 'Humain' : msg.sender === Sender.Gemini ? 'Gemini' : 'GPT-5.2';
+  const recentExchanges = history.slice(-5).map(msg => {
+    const name = msg.authorName || (msg.sender === Sender.User ? 'Humain' : 'IA');
     return `${name}: ${msg.text}`;
   }).join('\n');
 
   const prompt = `
-    Tu es "L'Observateur", une IA analytique chargée de débriefer un débat rapide pour un humain.
-    Voici les derniers échanges :
+    Tu es "L'Observateur", une IA analytique.
+    Voici les derniers échanges d'un projet de développement :
     ${recentExchanges}
 
     Tâche :
-    Analyse ce qui vient de se dire en 1 ou 2 phrases maximum.
-    - Sois synthétique.
-    - Explique l'enjeu ou la dynamique actuelle (ex: "Gemini contredit GPT sur...", "Ils sont d'accord pour dire que...").
-    - Langue : FRANÇAIS.
-    - Ton : Journalistique / Analyse temps réel.
+    Résume l'avancée technique ou le point de tension en 1 phrase courte et percutante.
+    Langue : FRANÇAIS.
   `;
 
-  // Utilisation exclusive de Puter.js
-  if (window.puter && window.puter.ai) {
-    try {
-      // Mise à jour vers google/gemini-2.5-flash qui est dans la liste des modèles supportés
-      const result = await window.puter.ai.chat(prompt, { model: 'google/gemini-2.5-flash' });
-      const text = typeof result === 'string' ? result : result?.message?.content || result?.content;
-      if (text) return text;
-    } catch (e) {
-      console.error("Analyst Puter Error:", e);
-    }
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      config: {
+        temperature: 0.3,
+      }
+    });
+    return response.text?.trim() || "";
+  } catch (e) {
+    return "";
   }
-
-  return "";
 };
